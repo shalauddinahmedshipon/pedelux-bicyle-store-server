@@ -1,9 +1,15 @@
-export type Bicycle = {
+import mongoose, { Document } from "mongoose";
+
+
+export interface IProduct extends Document {
   name: string;
   brand: string;
+  model: string;
+  category: mongoose.Schema.Types.ObjectId;
   price: number;
-  type: 'Mountain' | 'Road' | 'Hybrid' | 'BMX' | 'Electric';
-  description: string;
-  quantity: number;
-  inStock: boolean;
-};
+  stock: number;
+  description?: string;
+  imageUrl: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}

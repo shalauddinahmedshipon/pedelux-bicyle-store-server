@@ -1,46 +1,32 @@
-import { Schema, model } from 'mongoose';
-import { Bicycle } from './product.interface';
+import mongoose, { Schema } from "mongoose";
+import { IProduct } from "./product.interface";
 
-const ProductSchema = new Schema<Bicycle>(
+const productSchema = new Schema<IProduct>(
   {
-    name: {
-      type: String,
-      required: [true, 'Bicyle name is required'],
-    },
-    brand: {
-      type: String,
-      required: [true, 'Brand name is required'],
+    name: { type: String, required: [true, "Product name is required"] },
+    brand: { type: String, required: [true, "Brand is required"] },
+    model: { type: String, required: [true, "Model is required"] },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category", // References Category model
+      required: [true, "Category is required"],
     },
     price: {
       type: Number,
-      required: [true, 'price is required'],
-      min: [0, 'price must be a positive number'],
+      required: [true, "Price is required"],
+      min: [0, "Price cannot be negative"],
     },
-    type: {
-      type: String,
-      enum: {
-        values: ['Mountain', 'Road', 'Hybrid', 'BMX', 'Electric'],
-        message: '{VALUE} is not a valid type',
-      },
-    },
-    description: {
-      type: String,
-      required: [true, 'Short description about the product is required'],
-    },
-    quantity: {
+    stock: {
       type: Number,
-      required: [true, 'the quantity of a product is required'],
-      min: [0, 'quantity must be a positive number'],
+      required: [true, "Stock is required"],
+      min: [0, "Stock cannot be negative"],
     },
-    inStock: {
-      type: Boolean,
-      default: true,
-    },
+    description: { type: String, default: "" },
+    imageUrl: { type: String, required: [true, "Image URL is required"] },
   },
-  {
-    timestamps: true,
-    strict: true,
-  },
+  { timestamps: true }
 );
 
-export const Product = model<Bicycle>('Product', ProductSchema);
+
+const Product = mongoose.model<IProduct>("Product", productSchema);
+export default Product;
