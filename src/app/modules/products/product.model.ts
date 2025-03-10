@@ -7,8 +7,8 @@ const productSchema = new Schema<IProduct>(
     brand: { type: String, required: [true, "Brand is required"] },
     model: { type: String, required: [true, "Model is required"] },
     category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category", // References Category model
+      type: Schema.Types.ObjectId,
+      ref: "Category", 
       required: [true, "Category is required"],
     },
     price: {
@@ -21,6 +21,7 @@ const productSchema = new Schema<IProduct>(
       required: [true, "Stock is required"],
       min: [0, "Stock cannot be negative"],
     },
+    isDeleted:{type:Boolean,default:false},
     description: { type: String, default: "" },
     imageUrl: { type: String, required: [true, "Image URL is required"] },
   },

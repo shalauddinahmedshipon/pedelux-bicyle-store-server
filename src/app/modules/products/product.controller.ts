@@ -1,117 +1,73 @@
-import { Request, Response } from 'express';
-import { productServices } from './product.services';
-import config from '../../config';
+import { StatusCodes } from "http-status-codes";
+import catchAsync from "../../utils/catchAsync";
+import sendResponse from "../../utils/sendResponse";
+import { productService } from "./product.services";
 
-const createProduct = async (req: Request, res: Response) => {
-  try {
-    const product = req.body.product;
-    const result = await productServices.createProductToDB(product);
-    res.status(200).json({
-      message: 'Bicycle created successfully',
-      status: true,
-      data: result,
-    });
-  } catch (error: unknown) {
-    res.status(500).json({
-      message: 'Validation failed',
-      status: false,
-      error: error,
-      stack: config.node_env === 'development' && error instanceof Error ? error.stack : undefined,
-    });
-  }
-};
-const getAllProducts = async (req: Request, res: Response) => {
-  try {
-    const { searchTerm } = req.query;
-    const query: Record<string, unknown> = {}; 
-    if (searchTerm) {
-      const searchRegex = new RegExp(searchTerm as string, 'i');
-      query.$or = [
-        { name: searchRegex },
-        { brand: searchRegex },
-        { type: searchRegex },
-      ];
-    }
-    const result = await productServices.getAllProductsFromDB(query);
-    res.status(200).json({
-      message: 'Bicycles retrieved successfully',
-      status: true,
-      data: result,
-    });
-  } catch (error: unknown) {
-    res.status(500).json({
-      message: 'Validation failed',
-      status: false,
-      error: error,
-      stack: config.node_env === 'development' && error instanceof Error ? error.stack : undefined,
-    });
-  }
-};
 
-const getASingleProduct = async (req: Request, res: Response) => {
-  try {
-    const productId = req.params.productId;
-    const result = await productServices.getASingleProductFromDB(productId);
-    res.status(200).json({
-      message: 'Bicycles retrieved successfully',
-      status: true,
-      data: result,
-    });
-  } catch (error: unknown) {
-    res.status(500).json({
-      message: 'Validation failed',
-      status: false,
-      error: error,
-      stack: config.node_env === 'development' && error instanceof Error ? error.stack : undefined,
-    });
-  }
-};
-const updateProduct = async (req: Request, res: Response) => {
-  try {
-    const productId = req.params.productId;
-    const updateFields = req.body;
-    const result = await productServices.updateProductFromDB(
-      productId,
-      updateFields,
-    );
-    res.status(200).json({
-      message: 'Bicycle updated successfully',
-      status: true,
-      data: result,
-    });
-  } catch (error: unknown) {
-    res.status(500).json({
-      message: 'Validation failed',
-      status: false,
-      error: error,
-      stack: config.node_env === 'development' && error instanceof Error ? error.stack : undefined,
-    });
-  }
-};
-const deleteProduct = async (req: Request, res: Response) => {
-  try {
-    const productId = req.params.productId;
-    await productServices.deleteProductFromDB(productId);
+const createProduct = catchAsync(async (req, res) => {
+  const productData = req.body;
+  const result = await productService.createProductIntoDB(productData);
 
-    res.status(200).json({
-      message: 'Bicycle deleted successfully',
-      status: true,
-      data: {},
-    });
-  } catch (error: unknown) {
-    res.status(500).json({
-      message: 'Failed to delete the By cycle',
-      status: false,
-      error: error,
-      stack: config.node_env === 'development' && error instanceof Error ? error.stack : undefined,
-    });
-  }
-};
+  sendResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    message: "Product created successfully",
+    data: result,
+  });
+});
+
+const getAllProducts = catchAsync(async (req, res) => {
+  const { page, limit, search, ...filters } = req.query;
+  const result = await productService.getAllProductsFromDB(
+    Number(page) || 1,
+    Number(limit) || 10,
+    search as string,
+    filters
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "All products retrieved successfully",
+    data: result,
+  });
+});
+
+const getSingleProduct = catchAsync(async (req, res) => {
+  const { productId } = req.params;
+  const result = await productService.getSingleProductFromDB(productId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Product retrieved successfully",
+    data: result,
+  });
+});
+
+const updateProduct = catchAsync(async (req, res) => {
+  const { productId } = req.params;
+  const updatedProduct = await productService.updateProductInDB(productId, req.body);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Product updated successfully",
+    data: updatedProduct,
+  });
+});
+
+const deleteProduct = catchAsync(async (req, res) => {
+  const { productId } = req.params;
+  const result = await productService.deleteProductFromDB(productId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Product deleted successfully",
+    data: result,
+  });
+});
 
 export const productController = {
   createProduct,
   getAllProducts,
-  getASingleProduct,
+  getSingleProduct,
   updateProduct,
   deleteProduct,
 };

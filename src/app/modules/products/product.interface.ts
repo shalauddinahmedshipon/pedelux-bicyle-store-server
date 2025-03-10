@@ -1,15 +1,17 @@
-import mongoose, { Document } from "mongoose";
+import { Types } from "mongoose";
 
 
-export interface IProduct extends Document {
+
+export interface IProduct  {
   name: string;
   brand: string;
   model: string;
-  category: mongoose.Schema.Types.ObjectId;
+  category: Types.ObjectId;
   price: number;
   stock: number;
   description?: string;
   imageUrl: string;
+  isDeleted?:boolean
   createdAt?: Date;
   updatedAt?: Date;
 }
