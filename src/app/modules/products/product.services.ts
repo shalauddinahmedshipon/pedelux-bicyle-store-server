@@ -3,12 +3,12 @@ import { StatusCodes } from "http-status-codes";
 import AppError from "../../error/AppError";
 import Product from "./product.model";
 import { IProduct } from "./product.interface";
+import { Category } from "../category/category.model";
 
-/**
- * Add a new product to the database
- */
+
 const createProductIntoDB = async (payload: IProduct) => {
-  const isProductIsExist=await Product.find({name:payload.name});
+  const isProductIsExist=await Product.findOne({name:payload.name});
+  console.log(isProductIsExist);
   if(isProductIsExist){
     throw new AppError(StatusCodes.CONFLICT, "The product is already exist!");
   }
@@ -16,37 +16,49 @@ const createProductIntoDB = async (payload: IProduct) => {
   return product;
 };
 
-/**
- * Retrieve all products with optional filters and pagination
- */
+
 const getAllProductsFromDB = async (
   page: number = 1,
   limit: number = 10,
   search?: string,
-  filters?: Partial<IProduct>
+  filters?: any
 ) => {
-  const query: any = {};
-
-  // Apply search (by name, brand, model)
+  const query: any = { isDeleted: false }; 
   if (search) {
     query.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { brand: { $regex: search, $options: "i" } },
-      { model: { $regex: search, $options: "i" } },
+      { name: new RegExp(search, "i") },
+      { brand: new RegExp(search, "i") },
+      { model: new RegExp(search, "i") },
     ];
   }
 
-  // Apply filters (price range, stock availability, etc.)
   if (filters) {
+    if (filters.price) {
+      query.price = {};
+      if (filters.price.gte) query.price.$gte = Number(filters.price.gte);
+      if (filters.price.lte) query.price.$lte = Number(filters.price.lte);
+    }
+
+    if (filters.stock) {
+      query.stock = {};
+      if (filters.stock.gte) query.stock.$gte = Number(filters.stock.gte);
+      if (filters.stock.lte) query.stock.$lte = Number(filters.stock.lte);
+    }
+
+    if (filters.category) {
+      query.category = filters.category;
+    }
+
+   
     Object.keys(filters).forEach((key) => {
-      if (filters[key as keyof IProduct] !== undefined) {
-        query[key] = filters[key as keyof IProduct];
+      if (!["price", "stock", "category"].includes(key) && filters[key]) {
+        query[key] = filters[key]; 
       }
     });
   }
 
   const skip = (page - 1) * limit;
-  const products = await Product.find(query).skip(skip).limit(limit);
+  const products = await Product.find(query).skip(skip).limit(limit).populate("category");
   const totalProducts = await Product.countDocuments(query);
 
   return {
@@ -56,9 +68,7 @@ const getAllProductsFromDB = async (
   };
 };
 
-/**
- * Retrieve a single product by ID
- */
+
 const getSingleProductFromDB = async (productId: string) => {
   const product = await Product.findById(productId);
   if (!product) {
@@ -70,9 +80,7 @@ const getSingleProductFromDB = async (productId: string) => {
   return product;
 };
 
-/**
- * Update a product by ID
- */
+
 const updateProductInDB = async (productId: string, updateData: Partial<IProduct>) => {
   const isProductIsExist= await Product.findById(productId);
 
@@ -82,6 +90,12 @@ const updateProductInDB = async (productId: string, updateData: Partial<IProduct
   if (isProductIsExist.isDeleted) {
     throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
   }
+  if(updateData.category){
+    const isCategoryExist=await Category.findById(updateData.category);
+    if(!isCategoryExist){
+      throw new AppError(StatusCodes.NOT_FOUND,"Category does not exist")
+    }
+  }
   const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, {
     new: true,
     runValidators: true,
@@ -89,9 +103,7 @@ const updateProductInDB = async (productId: string, updateData: Partial<IProduct
   return updatedProduct;
 };
 
-/**
- * Delete a product (soft delete)
- */
+
 const deleteProductFromDB = async (productId: string) => {
   const product = await Product.findById(productId);
   if (!product) {
@@ -100,13 +112,12 @@ const deleteProductFromDB = async (productId: string) => {
   if (product.isDeleted) {
     throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
   }
+
   const deletedProduct = await Product.findByIdAndUpdate(productId, { isDeleted: true }, { new: true });
   return deletedProduct;
 };
 
-/**
- * Change product stock (used when an order is placed)
- */
+
 const changeProductStockFromDB = async (productId: string, quantity: number) => {
   const product = await Product.findById(productId);
   if (!product) {

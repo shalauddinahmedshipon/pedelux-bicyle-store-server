@@ -3,7 +3,7 @@ import { IProduct } from "./product.interface";
 
 const productSchema = new Schema<IProduct>(
   {
-    name: { type: String, required: [true, "Product name is required"] },
+    name: { type: String,unique:true, required: [true, "Product name is required"] },
     brand: { type: String, required: [true, "Brand is required"] },
     model: { type: String, required: [true, "Model is required"] },
     category: {
