@@ -5,20 +5,19 @@ import { IOrder } from "./order.interface";
 import User from "../users/user.model";
 import Product from "../products/product.model";
 import { orderStatuses } from "./order.constant";
+import mongoose from "mongoose";
 
 
 const createOrderIntoDB = async (userId: string, payload: IOrder) => {
-  const session = await mongoose.startSession(); // Start a session
-  session.startTransaction(); // Begin transaction
+  const session = await mongoose.startSession(); 
+  session.startTransaction(); 
 
   try {
-    // Check if the user exists
     const user = await User.findById(userId).session(session);
     if (!user) {
       throw new AppError(StatusCodes.NOT_FOUND, "User not found");
     }
 
-    // Validate if the products exist and have enough stock
     for (const product of payload.products) {
       const productInDB = await Product.findById(product.bicycle).session(session);
       if (!productInDB) {
@@ -30,7 +29,6 @@ const createOrderIntoDB = async (userId: string, payload: IOrder) => {
       }
     }
 
-    // Create the order
     const order = await Order.create(
       [
         {
@@ -46,7 +44,7 @@ const createOrderIntoDB = async (userId: string, payload: IOrder) => {
       { session }
     );
 
-    // Update the stock of products after order creation
+    
     for (const product of payload.products) {
       const productInDB = await Product.findById(product.bicycle).session(session);
       if (productInDB) {
@@ -55,15 +53,15 @@ const createOrderIntoDB = async (userId: string, payload: IOrder) => {
       }
     }
 
-    // Commit transaction if everything is successful
+    
     await session.commitTransaction();
     session.endSession();
 
-    return order[0]; // Since `create()` with an array returns an array
+    return order[0]; 
   } catch (error) {
-    await session.abortTransaction(); // Rollback on error
+    await session.abortTransaction(); 
     session.endSession();
-    throw error; // Rethrow error to be handled by middleware
+    throw error;
   }
 };
 

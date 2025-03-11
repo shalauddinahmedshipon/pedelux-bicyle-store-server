@@ -1,85 +1,85 @@
-import { Request, Response } from 'express';
-import config from '../../config';
-import { Order } from './order.interface';
-import { orderServices } from './order.services';
-import { productServices } from '../products/product.services';
+import { StatusCodes } from "http-status-codes";
+import catchAsync from "../../utils/catchAsync";
+import sendResponse from "../../utils/sendResponse";
+import { orderService } from "./order.services";
 
-const createOrder = async (req: Request, res: Response) => {
-  try {
-    const order: Order = req.body;
-    const OrderQuantity = order.quantity;
-    const productId = order.product;
-    const orderedProduct =
-      await productServices.getASingleProductFromDB(productId);
-    if (!orderedProduct) {
-       res.status(404).json({
-        status: false,
-        message: 'Product not found',
-      });
-    }
-    const orderedProductQuantity = orderedProduct?.quantity;
 
-    const orderProductUpdatedQuantity =
-      (orderedProductQuantity as number) - OrderQuantity;
+const createOrder = catchAsync(async (req, res) => {
+  const userId = req.user.id; 
+  const result = await orderService.createOrderIntoDB(userId, req.body);
 
-    if (orderedProductQuantity === 0) {
-      res.status(400).json({
-        status: false,
-        message: 'No product available in the stock',
-      });
-    }
+  sendResponse(res, {
+    statusCode: StatusCodes.CREATED,
+    message: "Order created successfully",
+    data: result,
+  });
+});
 
-    if (orderProductUpdatedQuantity < 0) {
-      res.status(400).json({
-        status: false,
-        message: 'Not enough product in stock',
-        available: `the number of available product is ${orderedProductQuantity}`,
-      });
-    }
+const getAllOrders = catchAsync(async (req, res) => {
+  const { page, limit, ...filters } = req.query;
+  const { data, meta } = await orderService.getAllOrdersFromDB(
+    Number(page) || 1,
+    Number(limit) || 10,
+    filters
+  );
 
-    await productServices.updateProductFromDB(productId, {
-      quantity: orderProductUpdatedQuantity,
-      inStock: orderProductUpdatedQuantity === 0 ? false : true,
-    });
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "All orders retrieved successfully",
+    data,
+    meta,
+  });
+});
 
-    const saveOrder = await orderServices.createOrderToDB(order);
+const getSingleOrder = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const result = await orderService.getSingleOrderFromDB(orderId);
 
-    res.status(200).json({
-      message: 'Order created successfully',
-      status: true,
-      data: saveOrder,
-    });
-  } catch (error: unknown) {
-    res.status(500).json({
-      message: 'Validation failed',
-      status: false,
-      error: error,
-      stack: config.node_env === 'development' && error instanceof Error ? error.stack : undefined,
-    });
-  }
-};
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Order retrieved successfully",
+    data: result,
+  });
+});
 
-const totalRevenue = async (req: Request, res: Response) => {
-  try {
-    const result = await orderServices.totalRevenueFromDB();
-    res.status(200).json({
-      message: 'Revenue calculated successfully',
-      status: true,
-      data: {
-        totalRevenue: result,
-      },
-    });
-  } catch (error: unknown) {
-    res.status(500).json({
-      message: 'something went wrong',
-      status: false,
-      error: error,
-      stack: config.node_env === 'development' && error instanceof Error ? error.stack : undefined,
-    });
-  }
-};
+const updateOrderStatus = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+  const result = await orderService.updateOrderStatusInDB(orderId, status);
 
-export const orderControllers = {
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Order status updated successfully",
+    data: result,
+  });
+});
+
+const deleteOrder = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const result = await orderService.deleteOrderFromDB(orderId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Order deleted successfully",
+    data: result,
+  });
+});
+
+const restoreStockOnOrderCancel = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const result = await orderService.changeProductStockOnOrderCancel(orderId);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: result.message,
+  });
+});
+
+export const orderController = {
   createOrder,
-  totalRevenue,
+  getAllOrders,
+  getSingleOrder,
+  updateOrderStatus,
+  deleteOrder,
+  restoreStockOnOrderCancel,
 };
