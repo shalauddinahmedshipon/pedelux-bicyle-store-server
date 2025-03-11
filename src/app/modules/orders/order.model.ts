@@ -1,35 +1,81 @@
-import { model, Schema } from 'mongoose';
-import { Order } from './order.interface';
+import { Schema, model, Types } from "mongoose";
+import { orderStatuses, paymentStatus } from "./order.constant";
 
-const OrderSchema = new Schema<Order>(
+
+const orderSchema = new Schema(
   {
-    email: {
-      type: String,
-      required: [true, 'Product Name must be required'],
-
-      match: [
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        'Please enter a valid email address',
-      ],
+    user: {
+      type: Types.ObjectId,
+      required: true,
+      ref: "User", 
     },
-    product: {
-      type: String,
-      required: [true, 'Product Name must be required'],
-    },
-    quantity: {
-      type: Number,
-      required: [true, 'Product order quantity is is required'],
-      min: [1, 'You have to order minimum 1 Product'],
-    },
-
+    products: [
+      {
+        bicycle: {
+          type: Types.ObjectId,
+          required: true,
+          ref: "Product",
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
     totalPrice: {
       type: Number,
       required: true,
     },
+    status: {
+      type: String,
+      enum:orderStatuses,
+      default: "pending",
+    },
+    paymentMethod: {
+      type: String,
+      required: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: paymentStatus,
+      default: "pending",
+    },
+    surjoPayTransactionId: {
+      type: String,
+    },
+    shippingAddress: {
+      street: {
+        type: String,
+        required: true,
+      },
+      city: {
+        type: String,
+        required: true,
+      },
+      state: {
+        type: String,
+        required: true,
+      },
+      zipCode: {
+        type: String,
+        required: true,
+      },
+      country: {
+        type: String,
+        required: true,
+      },
+    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
-export const OrderModel = model<Order>('Order', OrderSchema);
+const Order = model("Order", orderSchema);
+
+export default Order;

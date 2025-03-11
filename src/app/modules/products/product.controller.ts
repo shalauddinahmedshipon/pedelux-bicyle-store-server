@@ -17,7 +17,7 @@ const createProduct = catchAsync(async (req, res) => {
 
 const getAllProducts = catchAsync(async (req, res) => {
   const { page, limit, search, ...filters } = req.query;
-  const result = await productService.getAllProductsFromDB(
+  const {data,meta} = await productService.getAllProductsFromDB(
     Number(page) || 1,
     Number(limit) || 10,
     search as string,
@@ -27,7 +27,8 @@ const getAllProducts = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     message: "All products retrieved successfully",
-    data: result,
+    data:data,
+    meta:meta
   });
 });
 

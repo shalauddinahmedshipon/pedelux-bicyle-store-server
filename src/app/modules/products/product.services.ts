@@ -58,13 +58,17 @@ const getAllProductsFromDB = async (
   }
 
   const skip = (page - 1) * limit;
-  const products = await Product.find(query).skip(skip).limit(limit).populate("category");
-  const totalProducts = await Product.countDocuments(query);
-
+  const data = await Product.find(query).skip(skip).limit(limit).populate("category");
+  const total = await Product.countDocuments(query);
+  const totalPage = Math.ceil(total / limit);
   return {
-    products,
-    totalPages: Math.ceil(totalProducts / limit),
-    currentPage: page,
+  data,
+  meta:{
+  limit,
+  page,
+  total,
+  totalPage
+  }
   };
 };
 
