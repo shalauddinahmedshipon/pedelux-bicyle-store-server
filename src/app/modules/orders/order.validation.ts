@@ -7,7 +7,7 @@ const createOrderValidationSchema = z.object({
   body: z.object({
     user: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
       message: "Invalid user ID",
-    }),
+    }).optional(),
     products: z.array(
       z.object({
         bicycle: z.string().refine((val) => mongoose.Types.ObjectId.isValid(val), {
@@ -17,7 +17,7 @@ const createOrderValidationSchema = z.object({
         price: z.number().min(0, { message: "Price must be a positive number" }),
       })
     ),
-
+    isDeleted:z.boolean().default(false).optional(),
     totalPrice: z.number().min(0, { message: "Total price must be a positive number" }),
 
     status: z.enum(orderStatuses as [string, ...string[]]).default("pending"),
@@ -52,7 +52,7 @@ const updateOrderValidationSchema = z.object({
         })
       )
       .optional(),
-
+    isDeleted:z.boolean().default(false).optional(),
     totalPrice: z.number().min(0, { message: "Total price must be a positive number" }).optional(),
 
     status: z.enum(orderStatuses as [string, ...string[]]).optional(),

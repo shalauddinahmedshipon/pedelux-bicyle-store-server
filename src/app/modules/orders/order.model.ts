@@ -6,7 +6,6 @@ const orderSchema = new Schema(
   {
     user: {
       type: Types.ObjectId,
-      required: true,
       ref: "User", 
     },
     products: [
@@ -27,6 +26,10 @@ const orderSchema = new Schema(
         },
       },
     ],
+    isDeleted:{
+      type:Boolean,
+      default:false
+    },
     totalPrice: {
       type: Number,
       required: true,

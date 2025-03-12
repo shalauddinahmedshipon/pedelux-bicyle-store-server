@@ -31,9 +31,20 @@ const getAllOrders = catchAsync(async (req, res) => {
   });
 });
 
+const getMyOrder = catchAsync(async (req, res) => {
+  const { id } = req.user;
+  const result = await orderService.getMyOrdersFromDB(id);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Order retrieved successfully",
+    data: result,
+  });
+});
+
 const getSingleOrder = catchAsync(async (req, res) => {
   const { orderId } = req.params;
-  const result = await orderService.getSingleOrderFromDB(orderId);
+  const result = await orderService.getSingleOrderFromDB(orderId,req.user);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -56,7 +67,7 @@ const updateOrderStatus = catchAsync(async (req, res) => {
 
 const deleteOrder = catchAsync(async (req, res) => {
   const { orderId } = req.params;
-  const result = await orderService.deleteOrderFromDB(orderId);
+  const result = await orderService.deleteOrderFromDB(orderId,req.user);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
@@ -65,15 +76,7 @@ const deleteOrder = catchAsync(async (req, res) => {
   });
 });
 
-const restoreStockOnOrderCancel = catchAsync(async (req, res) => {
-  const { orderId } = req.params;
-  const result = await orderService.changeProductStockOnOrderCancel(orderId);
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    message: result.message,
-  });
-});
 
 export const orderController = {
   createOrder,
@@ -81,5 +84,6 @@ export const orderController = {
   getSingleOrder,
   updateOrderStatus,
   deleteOrder,
-  restoreStockOnOrderCancel,
+  getMyOrder,
+
 };

@@ -6,6 +6,7 @@ import User from "../users/user.model";
 import Product from "../products/product.model";
 import { orderStatuses } from "./order.constant";
 import mongoose from "mongoose";
+import { JwtPayload } from "jsonwebtoken";
 
 
 const createOrderIntoDB = async (userId: string, payload: IOrder) => {
@@ -67,7 +68,7 @@ const createOrderIntoDB = async (userId: string, payload: IOrder) => {
 
 
 const getAllOrdersFromDB = async (page: number = 1, limit: number = 10, filters?: any) => {
-  const query: any = {}; 
+  const query: any = {isDeleted:false}; 
 
   if (filters) {
     if (filters.status) {
@@ -103,16 +104,29 @@ const getAllOrdersFromDB = async (page: number = 1, limit: number = 10, filters?
   };
 };
 
-
-const getSingleOrderFromDB = async (orderId: string) => {
-  const order = await Order.findById(orderId)
+const getMyOrdersFromDB = async (userId:string) => {
+  const result = await Order.find({user:userId,isDeleted:false})
     .populate("user")
+    .populate("products.bicycle");
+  
+return result
+};
+
+
+const getSingleOrderFromDB = async (orderId: string,payload:JwtPayload) => {
+
+  const order = await Order.findById(orderId)
     .populate("products.bicycle");
 
   if (!order) {
     throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
   }
-
+  if (order.isDeleted) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+ if(payload.role === "customer" && order?.user!.toString() !== payload.id){
+  throw new AppError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
+ }
   return order;
 };
 
@@ -123,13 +137,31 @@ const updateOrderStatusInDB = async (orderId: string, status: string) => {
     throw new AppError(StatusCodes.BAD_REQUEST, "Invalid order status");
   }
 
-  const order = await Order.findById(orderId);
+  const order = await Order.findById(orderId).populate('products.bicycle');
   if (!order) {
     throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
   }
-
+  if (order.isDeleted) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+  if(order.status==="cancelled"){
+    throw new AppError(StatusCodes.BAD_REQUEST,"The order is already cancelled")
+  }
+  if (status === "cancelled") {
+    for (const product of order.products) {
+      const productInDB = await Product.findById(product.bicycle);
+      if (productInDB) {
+        productInDB.stock += product.quantity;
+        await productInDB.save();
+      }
+    }
+  }
   order.status = status;
-  await order.save();
+  (await order.save());
+
+  
+
+  
 
   return order;
 };
@@ -137,37 +169,25 @@ const updateOrderStatusInDB = async (orderId: string, status: string) => {
 
 
 
-const deleteOrderFromDB = async (orderId: string) => {
+const deleteOrderFromDB = async (orderId: string,payload:JwtPayload) => {
   const order = await Order.findById(orderId);
   if (!order) {
     throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
   }
+  if(order.isDeleted){
+    throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+  console.log(payload.role,order.user,payload.id)
+  if(payload.role === "customer" && order?.user!.toString() !== payload.id){
+    throw new AppError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
+   }
 
-  const deletedOrder = await Order.findByIdAndDelete(orderId);
+  const deletedOrder = await Order.findByIdAndUpdate(orderId,{isDeleted:true},{new:true});
   return deletedOrder;
 };
 
 
-const changeProductStockOnOrderCancel = async (orderId: string) => {
-  const order = await Order.findById(orderId);
-  if (!order) {
-    throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
-  }
 
-  if (order.status !== "cancelled") {
-    throw new AppError(StatusCodes.BAD_REQUEST, "Only cancelled orders can restore stock");
-  }
-
-  for (const product of order.products) {
-    const productInDB = await Product.findById(product.bicycle);
-    if (productInDB) {
-      productInDB.stock += product.quantity;
-      await productInDB.save();
-    }
-  }
-
-  return { message: "Product stock has been restored" };
-};
 
 export const orderService = {
   createOrderIntoDB,
@@ -175,5 +195,6 @@ export const orderService = {
   getSingleOrderFromDB,
   updateOrderStatusInDB,
   deleteOrderFromDB,
-  changeProductStockOnOrderCancel,
+  getMyOrdersFromDB,
+
 };

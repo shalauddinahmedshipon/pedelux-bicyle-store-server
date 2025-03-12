@@ -13,6 +13,7 @@ export interface IOrder {
   paymentMethod: string; 
   paymentStatus: 'paid' | 'pending' | 'failed'; 
   surjoPayTransactionId?: string; 
+  isDeleted:boolean;
   shippingAddress: {
     street: string;
     city: string;
