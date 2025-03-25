@@ -6,7 +6,7 @@ import { orderService } from "./order.services";
 
 const createOrder = catchAsync(async (req, res) => {
   const userId = req.user.id; 
-  const result = await orderService.createOrderIntoDB(userId, req.body);
+  const result = await orderService.createOrderIntoDB(userId, req.body,req.ip!);
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,

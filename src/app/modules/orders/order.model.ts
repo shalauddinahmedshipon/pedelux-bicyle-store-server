@@ -4,6 +4,8 @@ import { orderStatuses, paymentStatus } from "./order.constant";
 
 const orderSchema = new Schema(
   {
+  
+  
     user: {
       type: Types.ObjectId,
       ref: "User", 
@@ -38,6 +40,10 @@ const orderSchema = new Schema(
       type: String,
       enum:orderStatuses,
       default: "pending",
+    },
+    phoneNumber: {
+      type: String,
+      required: true,
     },
     paymentMethod: {
       type: String,

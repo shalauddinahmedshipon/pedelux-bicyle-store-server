@@ -1,15 +1,17 @@
 import { StatusCodes } from "http-status-codes";
 import AppError from "../../error/AppError";
-import Order from "./order.model";
+// import Order from "./order.model";
 import { IOrder } from "./order.interface"; 
 import User from "../users/user.model";
 import Product from "../products/product.model";
 import { orderStatuses } from "./order.constant";
 import mongoose from "mongoose";
 import { JwtPayload } from "jsonwebtoken";
+import { orderUtils } from "./order.utils";
+import Order from "./order.model";
 
 
-const createOrderIntoDB = async (userId: string, payload: IOrder) => {
+const createOrderIntoDB = async (userId: string, payload: IOrder,client_ip:string) => {
   const session = await mongoose.startSession(); 
   session.startTransaction(); 
 
@@ -36,6 +38,7 @@ const createOrderIntoDB = async (userId: string, payload: IOrder) => {
           user: userId,
           products: payload.products,
           totalPrice: payload.totalPrice,
+          phoneNumber:payload.phoneNumber,
           status: "pending",
           paymentMethod: payload.paymentMethod,
           paymentStatus: "pending",
@@ -58,7 +61,26 @@ const createOrderIntoDB = async (userId: string, payload: IOrder) => {
     await session.commitTransaction();
     session.endSession();
 
-    return order[0]; 
+
+// payment mechanism 
+  // payment integration
+  const shurjopayPayload = {
+    amount: payload.totalPrice,
+    order_id: order[0]._id,
+    currency: "BDT",
+    customer_name: user.name,
+    customer_address: payload.shippingAddress.state,
+    customer_email: user.email,
+    customer_phone: payload.phoneNumber,
+    customer_city: payload.shippingAddress.city,
+    client_ip,
+  };
+
+  const payment = await orderUtils.makePaymentAsync(shurjopayPayload);
+    return {
+     order: order[0],
+      payment
+    }
   } catch (error) {
     await session.abortTransaction(); 
     session.endSession();

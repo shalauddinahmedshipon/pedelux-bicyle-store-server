@@ -22,6 +22,7 @@ const createOrderValidationSchema = z.object({
 
     status: z.enum(orderStatuses as [string, ...string[]]).default("pending"),
 
+    phoneNumber: z.string().min(1, { message: "Phone Number is required" }),
     paymentMethod: z.string().min(1, { message: "Payment method is required" }),
 
     paymentStatus: z.enum(paymentStatus as [string, ...string[]]).default("pending"),
@@ -54,7 +55,7 @@ const updateOrderValidationSchema = z.object({
       .optional(),
     isDeleted:z.boolean().default(false).optional(),
     totalPrice: z.number().min(0, { message: "Total price must be a positive number" }).optional(),
-
+    phoneNumber: z.string().min(1, { message: "Phone Number is required" }).optional(),
     status: z.enum(orderStatuses as [string, ...string[]]).optional(),
 
     paymentMethod: z.string().min(1, { message: "Payment method is required" }).optional(),

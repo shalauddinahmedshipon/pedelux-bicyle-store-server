@@ -48,17 +48,37 @@ const getAllProductsFromDB = async (
     if (filters.category) {
       query.category = filters.category;
     }
-
+  
    
     Object.keys(filters).forEach((key) => {
-      if (!["price", "stock", "category"].includes(key) && filters[key]) {
+      if (!["price", "stock", "category","sort"].includes(key) && filters[key]) {
         query[key] = filters[key]; 
       }
     });
   }
 
+
+let sortQuery: any = {}; 
+ if (filters?.sort) {
+  if (filters.sort === "priceAsc") {
+    sortQuery = { price: 1 }; // Low to High
+  } else if (filters.sort === "priceDesc") {
+    sortQuery = { price: -1 }; // High to Low
+  } else if (filters.sort === "newest") {
+    sortQuery = { createdAt: -1 }; // Newest First
+  } else if (filters.sort === "oldest") {
+    sortQuery = { createdAt: 1 }; // Oldest First
+  } else if (filters.sort === "stockAsc") {
+    sortQuery = { stock: 1 }; // Low stock first
+  } else if (filters.sort === "stockDesc") {
+    sortQuery = { stock: -1 }; // High stock first
+  }
+}
+console.log(sortQuery)
+
   const skip = (page - 1) * limit;
-  const data = await Product.find(query).skip(skip).limit(limit).populate("category");
+  const filterQuery =  Product.find(query)
+  const data=await filterQuery.sort(sortQuery).skip(skip).limit(limit).populate("category");
   const total = await Product.countDocuments(query);
   const totalPage = Math.ceil(total / limit);
   return {
@@ -74,7 +94,7 @@ const getAllProductsFromDB = async (
 
 
 const getSingleProductFromDB = async (productId: string) => {
-  const product = await Product.findById(productId);
+  const product = await Product.findById(productId).populate('category');
   if (!product) {
     throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
   }
