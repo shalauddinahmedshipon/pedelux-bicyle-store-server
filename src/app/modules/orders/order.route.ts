@@ -8,6 +8,8 @@ import { orderController } from "./order.controller";
 const router = Router();
 
 
+router.get('/verify',auth(USER_ROLE.customer),orderController.verifyPayment);
+
 router.post(
   "/create-order",
   auth(USER_ROLE.customer), 

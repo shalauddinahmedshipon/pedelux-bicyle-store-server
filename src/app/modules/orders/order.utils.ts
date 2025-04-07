@@ -1,6 +1,7 @@
 import Shurjopay, { PaymentResponse, VerificationResponse } from "shurjopay";
 import config from "../../config";
 
+
 const shurjopay = new Shurjopay();
 
 shurjopay.config(
@@ -11,7 +12,7 @@ shurjopay.config(
   config.sp.sp_return_url!
 );
 
-// console.log(shurjopay);
+
 
 const makePaymentAsync = async (
   paymentPayload: any

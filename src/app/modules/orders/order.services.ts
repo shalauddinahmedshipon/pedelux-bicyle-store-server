@@ -1,6 +1,5 @@
 import { StatusCodes } from "http-status-codes";
 import AppError from "../../error/AppError";
-// import Order from "./order.model";
 import { IOrder } from "./order.interface"; 
 import User from "../users/user.model";
 import Product from "../products/product.model";
@@ -32,7 +31,7 @@ const createOrderIntoDB = async (userId: string, payload: IOrder,client_ip:strin
       }
     }
 
-    const order = await Order.create(
+    let order = await Order.create(
       [
         {
           user: userId,
@@ -57,10 +56,6 @@ const createOrderIntoDB = async (userId: string, payload: IOrder,client_ip:strin
       }
     }
 
-    
-    await session.commitTransaction();
-    session.endSession();
-
 
 // payment mechanism 
   // payment integration
@@ -69,24 +64,70 @@ const createOrderIntoDB = async (userId: string, payload: IOrder,client_ip:strin
     order_id: order[0]._id,
     currency: "BDT",
     customer_name: user.name,
-    customer_address: payload.shippingAddress.state,
+    customer_address: payload.shippingAddress.street,
+    customer_post_code:payload.shippingAddress.zipCode,
+    customer_city: payload.shippingAddress.city,
+    customer_state: payload.shippingAddress.state,
+    customer_country:payload.shippingAddress.country,
     customer_email: user.email,
     customer_phone: payload.phoneNumber,
-    customer_city: payload.shippingAddress.city,
     client_ip,
   };
 
+  await session.commitTransaction();
+  session.endSession();
+
   const payment = await orderUtils.makePaymentAsync(shurjopayPayload);
-    return {
-     order: order[0],
-      payment
-    }
+  if (payment?.transactionStatus) {
+    order = await order[0].updateOne({
+      transaction: {
+        id: payment.sp_order_id,
+        transactionStatus: payment.transactionStatus,
+      },
+    });
+  }
+
+console.log(payment)
+ 
+  return payment?.checkout_url
   } catch (error) {
     await session.abortTransaction(); 
     session.endSession();
     throw error;
   }
 };
+
+const verifyPayment = async (order_id: string) => {
+  const verifiedPayment = await orderUtils.verifyPaymentAsync(order_id);
+
+  if (verifiedPayment.length) {
+    await Order.findOneAndUpdate(
+      {
+        "transaction.id": order_id,
+      },
+      {
+        "transaction.bank_status": verifiedPayment[0].bank_status,
+        "transaction.sp_code": verifiedPayment[0].sp_code,
+        "transaction.sp_message": verifiedPayment[0].sp_message,
+        "transaction.transactionStatus": verifiedPayment[0].transaction_status,
+        "transaction.method": verifiedPayment[0].method,
+        "transaction.date_time": verifiedPayment[0].date_time,
+        status:
+          verifiedPayment[0].bank_status == "Success"
+            ? "Paid"
+            : verifiedPayment[0].bank_status == "Failed"
+            ? "Pending"
+            : verifiedPayment[0].bank_status == "Cancel"
+            ? "Cancelled"
+            : "",
+      }
+    );
+  }
+
+  return verifiedPayment;
+};
+
+
 
 
 const getAllOrdersFromDB = async (page: number = 1, limit: number = 10, filters?: any) => {
@@ -97,9 +138,6 @@ const getAllOrdersFromDB = async (page: number = 1, limit: number = 10, filters?
       query.status = filters.status;
     }
 
-    if (filters.paymentStatus) {
-      query.paymentStatus = filters.paymentStatus;
-    }
 
     if (filters.user) {
       query.user = filters.user;
@@ -181,10 +219,6 @@ const updateOrderStatusInDB = async (orderId: string, status: string) => {
   order.status = status;
   (await order.save());
 
-  
-
-  
-
   return order;
 };
 
@@ -218,5 +252,6 @@ export const orderService = {
   updateOrderStatusInDB,
   deleteOrderFromDB,
   getMyOrdersFromDB,
+  verifyPayment
 
 };

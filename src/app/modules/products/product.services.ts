@@ -1,4 +1,3 @@
-
 import { StatusCodes } from "http-status-codes";
 import AppError from "../../error/AppError";
 import Product from "./product.model";
@@ -142,22 +141,22 @@ const deleteProductFromDB = async (productId: string) => {
 };
 
 
-const changeProductStockFromDB = async (productId: string, quantity: number) => {
-  const product = await Product.findById(productId);
-  if (!product) {
-    throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
-  }
-  if (product.isDeleted) {
-    throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
-  }
-  if (product.stock < quantity) {
-    throw new AppError(StatusCodes.BAD_REQUEST, "Insufficient stock");
-  }
+// const changeProductStockFromDB = async (productId: string, quantity: number) => {
+//   const product = await Product.findById(productId);
+//   if (!product) {
+//     throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
+//   }
+//   if (product.isDeleted) {
+//     throw new AppError(StatusCodes.NOT_FOUND, "Product not found");
+//   }
+//   if (product.stock < quantity) {
+//     throw new AppError(StatusCodes.BAD_REQUEST, "Insufficient stock");
+//   }
 
-  product.stock -= quantity;
-  await product.save();
-  return product;
-};
+//   product.stock -= quantity;
+//   await product.save();
+//   return product;
+// };
 
 export const productService = {
   createProductIntoDB,
@@ -165,5 +164,5 @@ export const productService = {
   getSingleProductFromDB,
   updateProductInDB,
   deleteProductFromDB,
-  changeProductStockFromDB,
+  // changeProductStockFromDB,
 };

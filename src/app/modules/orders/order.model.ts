@@ -49,10 +49,14 @@ const orderSchema = new Schema(
       type: String,
       required: true,
     },
-    paymentStatus: {
-      type: String,
-      enum: paymentStatus,
-      default: "pending",
+    transaction: {
+      id: String,
+      transactionStatus: String,
+      bank_status: String,
+      sp_code: String,
+      sp_message: String,
+      method: String,
+      date_time: String,
     },
     surjoPayTransactionId: {
       type: String,

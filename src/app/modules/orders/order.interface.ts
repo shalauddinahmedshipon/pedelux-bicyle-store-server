@@ -13,8 +13,16 @@ export interface IOrder {
   totalPrice: number; 
   status: 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled';
   paymentMethod: string; 
-  paymentStatus: 'paid' | 'pending' | 'failed'; 
   surjoPayTransactionId?: string; 
+  transaction: {
+    id: string;
+    transactionStatus: string;
+    bank_status: string;
+    sp_code: string;
+    sp_message: string;
+    method: string;
+    date_time: string;
+  };
   isDeleted:boolean;
   shippingAddress: {
     street: string;

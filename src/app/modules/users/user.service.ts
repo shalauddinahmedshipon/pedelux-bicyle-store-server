@@ -28,9 +28,36 @@ const registerUserIntoDB = async (payload: TUser) => {
   };
 };
 
-const getAllUserFromDB = async () => {
-  const result = await User.find({isDeleted:false});
-  return result;
+const getAllUserFromDB = async (page: number = 1, limit: number = 10, filters?: any) => {
+  const query: any = {isDeleted:false}; 
+
+  if (filters) {
+    if (filters.status) {
+      query.status = filters.status;
+    }
+
+
+    if (filters.role) {
+      query.role = filters.role;
+    }
+  }
+
+  const skip = (page - 1) * limit;
+  const data = await User.find(query)
+    .skip(skip)
+    .limit(limit)
+  
+  const total = await User.countDocuments(query);
+  const totalPage = Math.ceil(total / limit);
+  return {
+  data,
+  meta:{
+  limit,
+  page,
+  total,
+  totalPage
+  }
+  };
 };
 
 const getSingleUserFromDB = async (id: string) => {
@@ -90,8 +117,8 @@ const changeStatusFromDB = async (
 };
 
 const updateUserRole = async (
-  role: 'customer' | 'admin',
   userId: string,
+  role: 'customer' | 'admin',
   payload: JwtPayload,
 ) => {
   const { email } = payload;

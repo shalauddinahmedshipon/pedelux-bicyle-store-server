@@ -19,11 +19,18 @@ const registerUser = catchAsync(async (req, res) => {
 });
 
 const getAllUser = catchAsync(async (req, res) => {
-  const result = await userService.getAllUserFromDB();
+  const { page, limit, ...filters } = req.query;
+  const { data, meta } = await userService.getAllUserFromDB(
+    Number(page) || 1,
+    Number(limit) || 10,
+    filters
+  );
+
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: 'All User retrieve successfully',
-    data: result,
+    message: "All users retrieved successfully",
+    data,
+    meta,
   });
 });
 
@@ -63,7 +70,7 @@ const changeStatus = catchAsync(async (req, res) => {
 const updateRole = catchAsync(async (req, res) => {
   const { userId, role } = req.body;
   const payload = req.user;
-  const result = await userService.updateUserRole(role, userId, payload);
+  const result = await userService.updateUserRole( userId,role, payload);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     message: 'Update user role successfully',

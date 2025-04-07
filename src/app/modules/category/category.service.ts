@@ -6,7 +6,7 @@ import slugify from "slugify";
 
 // Create Category
 const createCategoryInDB = async (payload: TCategory) => {
-  const existingCategory = await Category.findOne({ name: payload.name });
+  const existingCategory = await Category.findOne({ name: payload.name,isDeleted:false });
   if (existingCategory) {
     throw new AppError(StatusCodes.BAD_REQUEST, "Category with this name already exists");
   }

@@ -17,6 +17,7 @@ const registerUserValidationSchema = z.object({
 
 const updateUserStatusValidationScheme = z.object({
   body: z.object({
+    userId: z.string().optional(),
     status: z.enum(['active', 'deactivated']).optional(),
     role: z.enum(["admin", "customer"]).optional()
   }),

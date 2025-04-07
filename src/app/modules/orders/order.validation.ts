@@ -25,8 +25,6 @@ const createOrderValidationSchema = z.object({
     phoneNumber: z.string().min(1, { message: "Phone Number is required" }),
     paymentMethod: z.string().min(1, { message: "Payment method is required" }),
 
-    paymentStatus: z.enum(paymentStatus as [string, ...string[]]).default("pending"),
-
     surjoPayTransactionId: z.string().optional(),
 
     shippingAddress: z.object({
@@ -59,8 +57,6 @@ const updateOrderValidationSchema = z.object({
     status: z.enum(orderStatuses as [string, ...string[]]).optional(),
 
     paymentMethod: z.string().min(1, { message: "Payment method is required" }).optional(),
-
-    paymentStatus: z.enum(paymentStatus as [string, ...string[]]).default("pending").optional(),
 
     surjoPayTransactionId: z.string().optional(),
 
