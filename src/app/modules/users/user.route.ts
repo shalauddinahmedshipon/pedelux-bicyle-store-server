@@ -27,6 +27,12 @@ router.patch(
   userController.changeStatus,
 );
 router.patch(
+  '/update-profile',
+  auth(USER_ROLE.admin,USER_ROLE.customer),
+  validationRequest(userValidation.updateUserStatusValidationScheme),
+  userController.updateProfile,
+);
+router.patch(
   '/update-role',
   auth(USER_ROLE.admin),
   validationRequest(userValidation.updateUserStatusValidationScheme),

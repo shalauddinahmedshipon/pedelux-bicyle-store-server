@@ -21,6 +21,7 @@ const createOrderValidationSchema = z.object({
     totalPrice: z.number().min(0, { message: "Total price must be a positive number" }),
 
     status: z.enum(orderStatuses as [string, ...string[]]).default("pending"),
+    paymentStatus: z.enum(paymentStatus as [string, ...string[]]).default("pending"),
 
     phoneNumber: z.string().min(1, { message: "Phone Number is required" }),
     paymentMethod: z.string().min(1, { message: "Payment method is required" }),

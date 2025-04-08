@@ -41,6 +41,11 @@ const orderSchema = new Schema(
       enum:orderStatuses,
       default: "pending",
     },
+    paymentStatus: {
+      type: String,
+      enum:paymentStatus,
+      default: "pending",
+    },
     phoneNumber: {
       type: String,
       required: true,

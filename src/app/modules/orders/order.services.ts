@@ -56,8 +56,6 @@ const createOrderIntoDB = async (userId: string, payload: IOrder,client_ip:strin
       }
     }
 
-
-// payment mechanism 
   // payment integration
   const shurjopayPayload = {
     amount: payload.totalPrice,
@@ -112,13 +110,13 @@ const verifyPayment = async (order_id: string) => {
         "transaction.transactionStatus": verifiedPayment[0].transaction_status,
         "transaction.method": verifiedPayment[0].method,
         "transaction.date_time": verifiedPayment[0].date_time,
-        status:
+        paymentStatus:
           verifiedPayment[0].bank_status == "Success"
-            ? "Paid"
+            ? "paid"
             : verifiedPayment[0].bank_status == "Failed"
-            ? "Pending"
+            ? "pending"
             : verifiedPayment[0].bank_status == "Cancel"
-            ? "Cancelled"
+            ? "cancel"
             : "",
       }
     );
@@ -136,11 +134,6 @@ const getAllOrdersFromDB = async (page: number = 1, limit: number = 10, filters?
   if (filters) {
     if (filters.status) {
       query.status = filters.status;
-    }
-
-
-    if (filters.user) {
-      query.user = filters.user;
     }
   }
 

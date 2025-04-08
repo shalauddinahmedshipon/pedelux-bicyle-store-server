@@ -116,6 +116,25 @@ const changeStatusFromDB = async (
   return result;
 };
 
+const updateProfile=async(userId:string,name:string)=>{
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'User does not Exist');
+  }
+  if(user.isDeleted===true){
+    throw new AppError(StatusCodes.NOT_FOUND, 'User does not Exist')
+  }
+  if (await User.isUserDeactivated(user.status!)) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'User is Deactivated!');
+  } 
+  const result = await User.findByIdAndUpdate(
+    userId,
+    {name},
+    { new: true },
+  );
+  return result;
+}
+
 const updateUserRole = async (
   userId: string,
   role: 'customer' | 'admin',
@@ -175,5 +194,6 @@ export const userService ={
   deleteUserFromDB,
   getMyProfileFromDB,
   changeStatusFromDB,
-  updateUserRole
+  updateUserRole,
+  updateProfile
 }

@@ -67,6 +67,16 @@ const changeStatus = catchAsync(async (req, res) => {
   });
 });
 
+const updateProfile = catchAsync(async (req, res) => {
+  const { name } = req.body;
+  const {id:userId} = req.user;
+  const result = await userService.updateProfile( userId,name);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: 'Update user profile successfully',
+    data: result,
+  });
+});
 const updateRole = catchAsync(async (req, res) => {
   const { userId, role } = req.body;
   const payload = req.user;
@@ -96,5 +106,6 @@ export const userController ={
   changeStatus,
   updateRole,
   getMyProfile,
-  getSingleUser
+  getSingleUser,
+  updateProfile
 }
