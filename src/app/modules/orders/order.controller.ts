@@ -64,6 +64,19 @@ const getSingleOrder = catchAsync(async (req, res) => {
   });
 });
 
+const cancelOrder = catchAsync(async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+  const {id:userId}=req.user;
+  const result = await orderService.cancelMyOrderInDB(orderId,userId, status);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Order status updated successfully",
+    data: result,
+  });
+});
+
 const updateOrderStatus = catchAsync(async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
@@ -96,6 +109,7 @@ export const orderController = {
   updateOrderStatus,
   deleteOrder,
   getMyOrder,
-  verifyPayment
+  verifyPayment,
+  cancelOrder
 
 };

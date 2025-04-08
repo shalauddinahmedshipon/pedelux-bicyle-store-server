@@ -38,15 +38,18 @@ router.get(
   orderController.getSingleOrder
 );
 
-
-
-
-
 router.patch(
   "/:orderId",
   auth(USER_ROLE.admin), 
   validationRequest(orderValidation.updateOrderValidationSchema),
   orderController.updateOrderStatus
+);
+
+router.patch(
+  "/:orderId/cancel",
+  auth(USER_ROLE.customer), 
+  validationRequest(orderValidation.updateOrderValidationSchema),
+  orderController.cancelOrder
 );
 
 

@@ -181,9 +181,39 @@ const getSingleOrderFromDB = async (orderId: string,payload:JwtPayload) => {
   throw new AppError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
  }
   return order;
+}
+
+
+const cancelMyOrderInDB = async (orderId: string, userId:string, status: string) => {
+ 
+  if (!orderStatuses.includes(status)) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Invalid order status");
+  }
+
+  const order = await Order.findOne({_id:orderId,user:userId})
+  if (!order) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+  if (order.isDeleted) {
+    throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+  if(order.status==="cancelled"){
+    throw new AppError(StatusCodes.BAD_REQUEST,"The order is already cancelled")
+  }
+  if (status === "cancelled") {
+    for (const product of order.products) {
+      const productInDB = await Product.findById(product.bicycle);
+      if (productInDB) {
+        productInDB.stock += product.quantity;
+        await productInDB.save();
+      }
+    }
+  }
+  order.status = status;
+  (await order.save());
+
+  return order;
 };
-
-
 const updateOrderStatusInDB = async (orderId: string, status: string) => {
  
   if (!orderStatuses.includes(status)) {
@@ -245,6 +275,7 @@ export const orderService = {
   updateOrderStatusInDB,
   deleteOrderFromDB,
   getMyOrdersFromDB,
-  verifyPayment
+  verifyPayment,
+  cancelMyOrderInDB
 
 };
