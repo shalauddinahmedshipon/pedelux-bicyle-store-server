@@ -89,6 +89,16 @@ const updateOrderStatus = catchAsync(async (req, res) => {
   });
 });
 
+const getSalesDashboard = catchAsync(async (req, res) => {
+  const result = await orderService.getSalesDashboard();
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Order retrieved successfully",
+    data: result,
+  });
+});
+
 const deleteOrder = catchAsync(async (req, res) => {
   const { orderId } = req.params;
   const result = await orderService.deleteOrderFromDB(orderId,req.user);
@@ -110,6 +120,6 @@ export const orderController = {
   deleteOrder,
   getMyOrder,
   verifyPayment,
-  cancelOrder
-
+  cancelOrder,
+  getSalesDashboard
 };

@@ -24,6 +24,11 @@ router.get(
   orderController.getAllOrders 
 );
 
+router.get(
+  "/sales-dashboard/admin",
+  auth(USER_ROLE.admin), 
+  orderController.getSalesDashboard
+);
 
 router.get(
   "/my-orders",
@@ -51,7 +56,6 @@ router.patch(
   validationRequest(orderValidation.updateOrderValidationSchema),
   orderController.cancelOrder
 );
-
 
 
 router.patch(

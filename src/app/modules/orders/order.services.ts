@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { JwtPayload } from "jsonwebtoken";
 import { orderUtils } from "./order.utils";
 import Order from "./order.model";
+import moment from "moment";
 
 
 const createOrderIntoDB = async (userId: string, payload: IOrder,client_ip:string) => {
@@ -246,7 +247,43 @@ const updateOrderStatusInDB = async (orderId: string, status: string) => {
 };
 
 
+const getSalesDashboard = async ( ) => {
+  const orders = await Order.find({ isDeleted: false, paymentStatus: 'paid' });
 
+    let totalRevenue = 0;
+    let totalUnitsSold = 0;
+    const salesByMonthMap = new Map();
+
+    orders.forEach(order => {
+      totalRevenue += order.totalPrice || 0;
+
+      order.products.forEach(item => {
+        totalUnitsSold += item.quantity;
+
+        const monthKey = moment(order.createdAt).format('YYYY-MM');
+        if (!salesByMonthMap.has(monthKey)) {
+          salesByMonthMap.set(monthKey, { revenue: 0, units: 0 });
+        }
+
+        const current = salesByMonthMap.get(monthKey);
+        salesByMonthMap.set(monthKey, {
+          revenue: current.revenue + (item.price * item.quantity),
+          units: current.units + item.quantity
+        });
+      });
+    });
+
+    const salesByMonth = Array.from(salesByMonthMap.entries()).map(([month, data]) => ({
+      month,
+      revenue: parseFloat(data.revenue.toFixed(2)),
+      unitsSold: data.units
+    }));
+    return {
+      totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+      totalUnitsSold,
+      salesByMonth
+    }
+};
 
 const deleteOrderFromDB = async (orderId: string,payload:JwtPayload) => {
   const order = await Order.findById(orderId);
@@ -276,6 +313,7 @@ export const orderService = {
   deleteOrderFromDB,
   getMyOrdersFromDB,
   verifyPayment,
-  cancelMyOrderInDB
+  cancelMyOrderInDB,
+  getSalesDashboard
 
 };
