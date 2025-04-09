@@ -1,10 +1,11 @@
 import { Types } from "mongoose";
 
 
+
 export interface IOrder {
   user: Types.ObjectId; 
   products: Array<{ 
-    bicycle: Types.ObjectId;
+    bicycle:  Types.ObjectId;
     quantity: number; 
     price: number; 
   }>;

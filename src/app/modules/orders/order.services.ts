@@ -248,7 +248,10 @@ const updateOrderStatusInDB = async (orderId: string, status: string) => {
 
 
 const getSalesDashboard = async ( ) => {
-  const orders = await Order.find({ isDeleted: false, paymentStatus: 'paid' });
+  const orders = await Order.find({ isDeleted: false, paymentStatus: 'paid' }).populate({
+    path: 'products.bicycle',
+    populate: { path: 'category' },
+  });;
 
     let totalRevenue = 0;
     let totalUnitsSold = 0;
@@ -278,10 +281,78 @@ const getSalesDashboard = async ( ) => {
       revenue: parseFloat(data.revenue.toFixed(2)),
       unitsSold: data.units
     }));
+    const totalCustomer = await User.countDocuments({role:"customer"});
+
+
+    const products = await Product.find({ isDeleted: false }).populate('category');
+
+    // 1. Available Stock
+    const availableStock = products.reduce((total, product) => total + (product?.stock || 0), 0);
+
+console.log(availableStock)
+    
+    // 2. Best Selling Products
+    const productSalesMap: Record<string, { name: string; unitsSold: number,imageUrl:string,model:string }> = {};
+    
+    orders.forEach(order => {
+      order.products.forEach(item => {
+        const bicycle = item.bicycle as any; 
+    
+        if (!bicycle || !bicycle._id) return;
+    
+        if (!productSalesMap[bicycle._id]) {
+          productSalesMap[bicycle._id] = {
+            name: bicycle.name,
+            imageUrl:bicycle.imageUrl,
+            model:bicycle.model,
+            unitsSold: 0,
+          };
+        }
+    
+        productSalesMap[bicycle._id].unitsSold += item.quantity;
+      });
+    });
+    
+    const bestSellingProducts = Object.values(productSalesMap)
+      .sort((a, b) => b.unitsSold - a.unitsSold)
+      .slice(0, 5);
+    
+    // 3. Sales by Category
+    const categorySalesMap: Record<string, { category: string; sales: number }> = {};
+    
+    orders.forEach(order => {
+      order.products.forEach(item => {
+        const bicycle = item.bicycle as any;
+    
+        if (!bicycle || !bicycle.category || !bicycle.price) return;
+    
+        const category = bicycle.category;
+    
+        const categoryId = category._id;
+        const categoryName = category.name;
+        const revenue = item.price * item.quantity;
+    
+        if (!categorySalesMap[categoryId]) {
+          categorySalesMap[categoryId] = {
+            category: categoryName,
+            sales: 0,
+          };
+        }
+    
+        categorySalesMap[categoryId].sales += revenue;
+      });
+    });
+    
+    const salesByCategory = Object.values(categorySalesMap);
+
     return {
       totalRevenue: parseFloat(totalRevenue.toFixed(2)),
       totalUnitsSold,
-      salesByMonth
+      salesByMonth,
+      totalCustomer,
+      availableStock,
+      salesByCategory,
+      bestSellingProducts
     }
 };
 
