@@ -1,68 +1,55 @@
-import { Router } from "express";
-import validationRequest from "../../middlewares/validateRequest";
-import auth from "../../middlewares/auth";
-import { USER_ROLE } from "../users/user.constant";
-import { orderValidation } from "./order.validation"; 
-import { orderController } from "./order.controller";
+import { Router } from 'express';
+import validationRequest from '../../middlewares/validateRequest';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../users/user.constant';
+import { orderValidation } from './order.validation';
+import { orderController } from './order.controller';
 
 const router = Router();
 
-
-router.get('/verify',auth(USER_ROLE.customer),orderController.verifyPayment);
+router.get('/verify', auth(USER_ROLE.customer), orderController.verifyPayment);
 
 router.post(
-  "/create-order",
-  auth(USER_ROLE.customer), 
+  '/create-order',
+  auth(USER_ROLE.customer),
   validationRequest(orderValidation.createOrderValidationSchema),
-  orderController.createOrder
+  orderController.createOrder,
 );
 
+router.get('/', auth(USER_ROLE.admin), orderController.getAllOrders);
 
 router.get(
-  "/",
-  auth(USER_ROLE.admin), 
-  orderController.getAllOrders 
+  '/sales-dashboard/admin',
+  auth(USER_ROLE.admin),
+  orderController.getSalesDashboard,
 );
 
-router.get(
-  "/sales-dashboard/admin",
-  auth(USER_ROLE.admin), 
-  orderController.getSalesDashboard
-);
+router.get('/my-orders', auth(USER_ROLE.customer), orderController.getMyOrder);
 
 router.get(
-  "/my-orders",
-  auth(USER_ROLE.customer), 
-  orderController.getMyOrder
-);
-
-
-router.get(
-  "/:orderId",
-  auth(USER_ROLE.admin,USER_ROLE.customer),
-  orderController.getSingleOrder
+  '/:orderId',
+  auth(USER_ROLE.admin, USER_ROLE.customer),
+  orderController.getSingleOrder,
 );
 
 router.patch(
-  "/:orderId",
-  auth(USER_ROLE.admin), 
+  '/:orderId',
+  auth(USER_ROLE.admin),
   validationRequest(orderValidation.updateOrderValidationSchema),
-  orderController.updateOrderStatus
+  orderController.updateOrderStatus,
 );
 
 router.patch(
-  "/:orderId/cancel",
-  auth(USER_ROLE.customer), 
+  '/:orderId/cancel',
+  auth(USER_ROLE.customer),
   validationRequest(orderValidation.updateOrderValidationSchema),
-  orderController.cancelOrder
+  orderController.cancelOrder,
 );
-
 
 router.patch(
-  "/:orderId/soft-delete",
-  auth(USER_ROLE.admin,USER_ROLE.customer),
-  orderController.deleteOrder 
+  '/:orderId/soft-delete',
+  auth(USER_ROLE.admin, USER_ROLE.customer),
+  orderController.deleteOrder,
 );
-
 
 export const orderRoutes = router;

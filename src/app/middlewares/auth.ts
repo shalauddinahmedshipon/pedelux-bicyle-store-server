@@ -8,7 +8,6 @@ import config from '../config';
 import { TUserRole } from '../modules/users/user.interface';
 import User from '../modules/users/user.model';
 
-
 const auth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization;
@@ -31,8 +30,8 @@ const auth = (...requiredRoles: TUserRole[]) => {
     if (!user) {
       throw new AppError(StatusCodes.NOT_FOUND, 'User is not Exist');
     }
-    if(user.isDeleted===true){
-      throw new AppError(StatusCodes.NOT_FOUND, 'User does not Exist')
+    if (user.isDeleted === true) {
+      throw new AppError(StatusCodes.NOT_FOUND, 'User does not Exist');
     }
     if (await User.isUserDeactivated(user.status!)) {
       throw new AppError(StatusCodes.BAD_REQUEST, 'User is Deactivated!');

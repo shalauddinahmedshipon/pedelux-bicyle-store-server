@@ -1,21 +1,18 @@
-import { Schema, model, Types } from "mongoose";
-import { orderStatuses, paymentStatus } from "./order.constant";
-
+import { Schema, model, Types } from 'mongoose';
+import { orderStatuses, paymentStatus } from './order.constant';
 
 const orderSchema = new Schema(
   {
-  
-  
     user: {
       type: Types.ObjectId,
-      ref: "User", 
+      ref: 'User',
     },
     products: [
       {
         bicycle: {
           type: Types.ObjectId,
           required: true,
-          ref: "Product",
+          ref: 'Product',
         },
         quantity: {
           type: Number,
@@ -28,9 +25,9 @@ const orderSchema = new Schema(
         },
       },
     ],
-    isDeleted:{
-      type:Boolean,
-      default:false
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
     totalPrice: {
       type: Number,
@@ -38,13 +35,13 @@ const orderSchema = new Schema(
     },
     status: {
       type: String,
-      enum:orderStatuses,
-      default: "pending",
+      enum: orderStatuses,
+      default: 'pending',
     },
     paymentStatus: {
       type: String,
-      enum:paymentStatus,
-      default: "pending",
+      enum: paymentStatus,
+      default: 'pending',
     },
     phoneNumber: {
       type: String,
@@ -91,9 +88,9 @@ const orderSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const Order = model("Order", orderSchema);
+const Order = model('Order', orderSchema);
 
 export default Order;

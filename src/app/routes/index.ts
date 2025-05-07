@@ -5,21 +5,20 @@ import { userRoutes } from '../modules/users/user.route';
 import { authRoutes } from '../modules/auth/auth.route';
 import { categoryRoutes } from '../modules/category/category.route';
 
-
 const router = Router();
 
 const moduleRoutes = [
   {
-    path:'/users',
-    route:userRoutes
+    path: '/users',
+    route: userRoutes,
   },
   {
-    path:'/auth',
-    route:authRoutes
+    path: '/auth',
+    route: authRoutes,
   },
   {
-    path:'/categories',
-    route:categoryRoutes
+    path: '/categories',
+    route: categoryRoutes,
   },
   {
     path: '/products',
@@ -29,10 +28,8 @@ const moduleRoutes = [
     path: '/orders',
     route: orderRoutes,
   },
- 
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 
 export default router;
-

@@ -1,19 +1,18 @@
-import { StatusCodes } from "http-status-codes";
-import catchAsync from "../../utils/catchAsync";
-import sendResponse from "../../utils/sendResponse";
-import { userService } from "./user.service";
+import { StatusCodes } from 'http-status-codes';
+import catchAsync from '../../utils/catchAsync';
+import sendResponse from '../../utils/sendResponse';
+import { userService } from './user.service';
 
 const registerUser = catchAsync(async (req, res) => {
   const userData = req.body;
   const result = await userService.registerUserIntoDB(userData);
-
-  const { accessToken ,user} = result;
+  const { accessToken, user } = result;
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     message: 'User Register successfully',
     data: {
       accessToken,
-      user
+      user,
     },
   });
 });
@@ -23,12 +22,12 @@ const getAllUser = catchAsync(async (req, res) => {
   const { data, meta } = await userService.getAllUserFromDB(
     Number(page) || 1,
     Number(limit) || 10,
-    filters
+    filters,
   );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: "All users retrieved successfully",
+    message: 'All users retrieved successfully',
     data,
     meta,
   });
@@ -54,8 +53,6 @@ const getMyProfile = catchAsync(async (req, res) => {
   });
 });
 
-
-
 const changeStatus = catchAsync(async (req, res) => {
   const { userId, status } = req.body;
   const payload = req.user;
@@ -69,8 +66,8 @@ const changeStatus = catchAsync(async (req, res) => {
 
 const updateProfile = catchAsync(async (req, res) => {
   const { name } = req.body;
-  const {id:userId} = req.user;
-  const result = await userService.updateProfile( userId,name);
+  const { id: userId } = req.user;
+  const result = await userService.updateProfile(userId, name);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     message: 'Update user profile successfully',
@@ -80,7 +77,7 @@ const updateProfile = catchAsync(async (req, res) => {
 const updateRole = catchAsync(async (req, res) => {
   const { userId, role } = req.body;
   const payload = req.user;
-  const result = await userService.updateUserRole( userId,role, payload);
+  const result = await userService.updateUserRole(userId, role, payload);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     message: 'Update user role successfully',
@@ -90,7 +87,7 @@ const updateRole = catchAsync(async (req, res) => {
 
 const deleteUser = catchAsync(async (req, res) => {
   const { userId } = req.params;
-  const result = await userService.deleteUserFromDB(userId,req.user);
+  const result = await userService.deleteUserFromDB(userId, req.user);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -99,7 +96,7 @@ const deleteUser = catchAsync(async (req, res) => {
   });
 });
 
-export const userController ={
+export const userController = {
   getAllUser,
   registerUser,
   deleteUser,
@@ -107,5 +104,5 @@ export const userController ={
   updateRole,
   getMyProfile,
   getSingleUser,
-  updateProfile
-}
+  updateProfile,
+};

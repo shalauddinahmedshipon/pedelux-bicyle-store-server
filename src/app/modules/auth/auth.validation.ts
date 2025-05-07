@@ -23,9 +23,7 @@ const changePasswordValidationSchema = z.object({
   }),
 });
 
-
-
 export const AuthValidation = {
   loginValidationSchema,
-  changePasswordValidationSchema
+  changePasswordValidationSchema,
 };

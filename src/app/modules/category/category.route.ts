@@ -1,44 +1,36 @@
-import { Router } from "express";
-import validationRequest from "../../middlewares/validateRequest";
-import { categoryValidation } from "./category.validation";
-import auth from "../../middlewares/auth";
-import { USER_ROLE } from "../users/user.constant";
-import { categoryController } from "./category.controller";
-
+import { Router } from 'express';
+import validationRequest from '../../middlewares/validateRequest';
+import { categoryValidation } from './category.validation';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../users/user.constant';
+import { categoryController } from './category.controller';
 
 const router = Router();
 
 router.post(
-  "/create-category",
+  '/create-category',
   auth(USER_ROLE.admin),
   validationRequest(categoryValidation.createCategoryValidationSchema),
-  categoryController.createCategory
+  categoryController.createCategory,
 );
 
-router.get("/", categoryController.getAllCategories);
+router.get('/', categoryController.getAllCategories);
 
-router.get(
-  "/:id",
-  categoryController.getCategoryById
-);
+router.get('/:id', categoryController.getCategoryById);
 
 router.patch(
-  "/:id",
+  '/:id',
   auth(USER_ROLE.admin),
   validationRequest(categoryValidation.updateCategoryValidationSchema),
-  categoryController.updateCategory
+  categoryController.updateCategory,
 );
 
-router.delete(
-  "/:id",
-  auth( USER_ROLE.admin),
-  categoryController.deleteCategory
-);
+router.delete('/:id', auth(USER_ROLE.admin), categoryController.deleteCategory);
 
 router.patch(
-  "/:id/soft-delete",
-  auth( USER_ROLE.admin),
-  categoryController.softDeleteCategory
+  '/:id/soft-delete',
+  auth(USER_ROLE.admin),
+  categoryController.softDeleteCategory,
 );
 
 export const categoryRoutes = router;

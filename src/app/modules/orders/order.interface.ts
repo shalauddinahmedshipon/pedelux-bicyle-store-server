@@ -1,20 +1,18 @@
-import { Types } from "mongoose";
-
-
+import { Types } from 'mongoose';
 
 export interface IOrder {
-  user: Types.ObjectId; 
-  products: Array<{ 
-    bicycle:  Types.ObjectId;
-    quantity: number; 
-    price: number; 
+  user: Types.ObjectId;
+  products: Array<{
+    bicycle: Types.ObjectId;
+    quantity: number;
+    price: number;
   }>;
-  phoneNumber:string;
-  totalPrice: number; 
+  phoneNumber: string;
+  totalPrice: number;
   status: 'pending' | 'shipped' | 'completed' | 'cancelled';
   paymentStatus: 'pending' | 'cancel' | 'paid';
-  paymentMethod: string; 
-  surjoPayTransactionId?: string; 
+  paymentMethod: string;
+  surjoPayTransactionId?: string;
   transaction: {
     id: string;
     transactionStatus: string;
@@ -24,7 +22,7 @@ export interface IOrder {
     method: string;
     date_time: string;
   };
-  isDeleted:boolean;
+  isDeleted: boolean;
   shippingAddress: {
     street: string;
     city: string;

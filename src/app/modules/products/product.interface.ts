@@ -1,8 +1,6 @@
-import { Types } from "mongoose";
+import { Types } from 'mongoose';
 
-
-
-export interface IProduct  {
+export interface IProduct {
   name: string;
   brand: string;
   model: string;
@@ -11,7 +9,7 @@ export interface IProduct  {
   stock: number;
   description?: string;
   imageUrl: string;
-  isDeleted?:boolean
+  isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -1,18 +1,18 @@
-import { Model } from "mongoose";
-import { USER_ROLE } from "./user.constant";
+import { Model } from 'mongoose';
+import { USER_ROLE } from './user.constant';
 
-export type TUser= {
+export type TUser = {
   _id?: string;
   name: string;
   email: string;
   password: string;
   passwordChangedAt?: Date;
   status?: 'active' | 'deactivated';
-  role?:  "admin" | "customer";
-  isDeleted?:boolean;
+  role?: 'admin' | 'customer';
+  isDeleted?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-}
+};
 
 export interface UserModel extends Model<TUser> {
   isUserExistByEmail(email: string): Promise<TUser>;

@@ -1,27 +1,29 @@
-import { StatusCodes } from "http-status-codes";
-import catchAsync from "../../utils/catchAsync";
-import sendResponse from "../../utils/sendResponse";
-import { orderService } from "./order.services";
-
+import { StatusCodes } from 'http-status-codes';
+import catchAsync from '../../utils/catchAsync';
+import sendResponse from '../../utils/sendResponse';
+import { orderService } from './order.services';
 
 const createOrder = catchAsync(async (req, res) => {
-  const userId = req.user.id; 
-  const result = await orderService.createOrderIntoDB(userId, req.body,req.ip!);
+  const userId = req.user.id;
+  const result = await orderService.createOrderIntoDB(
+    userId,
+    req.body,
+    req.ip!,
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
-    message: "Order created successfully",
+    message: 'Order created successfully',
     data: result,
   });
 });
-
 
 const verifyPayment = catchAsync(async (req, res) => {
   const order = await orderService.verifyPayment(req.query.order_id as string);
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
-    message: "Order verified successfully",
+    message: 'Order verified successfully',
     data: order,
   });
 });
@@ -31,12 +33,12 @@ const getAllOrders = catchAsync(async (req, res) => {
   const { data, meta } = await orderService.getAllOrdersFromDB(
     Number(page) || 1,
     Number(limit) || 10,
-    filters
+    filters,
   );
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: "All orders retrieved successfully",
+    message: 'All orders retrieved successfully',
     data,
     meta,
   });
@@ -48,18 +50,18 @@ const getMyOrder = catchAsync(async (req, res) => {
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: "Order retrieved successfully",
+    message: 'Order retrieved successfully',
     data: result,
   });
 });
 
 const getSingleOrder = catchAsync(async (req, res) => {
   const { orderId } = req.params;
-  const result = await orderService.getSingleOrderFromDB(orderId,req.user);
+  const result = await orderService.getSingleOrderFromDB(orderId, req.user);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: "Order retrieved successfully",
+    message: 'Order retrieved successfully',
     data: result,
   });
 });
@@ -67,12 +69,12 @@ const getSingleOrder = catchAsync(async (req, res) => {
 const cancelOrder = catchAsync(async (req, res) => {
   const { orderId } = req.params;
   const { status } = req.body;
-  const {id:userId}=req.user;
-  const result = await orderService.cancelMyOrderInDB(orderId,userId, status);
+  const { id: userId } = req.user;
+  const result = await orderService.cancelMyOrderInDB(orderId, userId, status);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: "Order status updated successfully",
+    message: 'Order status updated successfully',
     data: result,
   });
 });
@@ -84,7 +86,7 @@ const updateOrderStatus = catchAsync(async (req, res) => {
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: "Order status updated successfully",
+    message: 'Order status updated successfully',
     data: result,
   });
 });
@@ -94,23 +96,21 @@ const getSalesDashboard = catchAsync(async (req, res) => {
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: "Order retrieved successfully",
+    message: 'Order retrieved successfully',
     data: result,
   });
 });
 
 const deleteOrder = catchAsync(async (req, res) => {
   const { orderId } = req.params;
-  const result = await orderService.deleteOrderFromDB(orderId,req.user);
+  const result = await orderService.deleteOrderFromDB(orderId, req.user);
 
   sendResponse(res, {
     statusCode: StatusCodes.OK,
-    message: "Order deleted successfully",
+    message: 'Order deleted successfully',
     data: result,
   });
 });
-
-
 
 export const orderController = {
   createOrder,
@@ -121,5 +121,5 @@ export const orderController = {
   getMyOrder,
   verifyPayment,
   cancelOrder,
-  getSalesDashboard
+  getSalesDashboard,
 };

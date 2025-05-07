@@ -13,8 +13,8 @@ const loginUser = async (payload: TLogin) => {
   if (!user) {
     throw new AppError(StatusCodes.NOT_FOUND, 'User is not Exist');
   }
-  if(user.isDeleted===true){
-    throw new AppError(StatusCodes.NOT_FOUND, 'User does not Exist')
+  if (user.isDeleted === true) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'User does not Exist');
   }
   if (await User.isUserDeactivated(user.status!)) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'User is deactivated!');
@@ -25,15 +25,13 @@ const loginUser = async (payload: TLogin) => {
   const jwtPayload = {
     email: user.email,
     role: user.role!,
-    id:user._id
+    id: user._id,
   };
   const accessToken = createToken(
     jwtPayload,
     config.jwt_access_secret as string,
     config.access_token_expiresIn as string,
   );
-
-
 
   return {
     accessToken,
@@ -52,8 +50,8 @@ const changePasswordIntoDB = async (
   if (!isUserExist) {
     throw new AppError(StatusCodes.NOT_FOUND, 'User is not Exist');
   }
-  if(isUserExist.isDeleted===true){
-    throw new AppError(StatusCodes.NOT_FOUND, 'User does not Exist')
+  if (isUserExist.isDeleted === true) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'User does not Exist');
   }
   if (await User.isUserDeactivated(isUserExist.status!)) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'User is deactivated!');
@@ -90,8 +88,7 @@ const changePasswordIntoDB = async (
   return null;
 };
 
-
 export const authServices = {
   loginUser,
-  changePasswordIntoDB
+  changePasswordIntoDB,
 };

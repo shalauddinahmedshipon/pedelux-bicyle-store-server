@@ -3,7 +3,6 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { authServices } from './auth.service';
 
-
 const loginUser = catchAsync(async (req, res) => {
   const result = await authServices.loginUser(req.body);
 
@@ -13,7 +12,7 @@ const loginUser = catchAsync(async (req, res) => {
     statusCode: StatusCodes.OK,
     message: 'User login successfully',
     data: {
-      accessToken
+      accessToken,
     },
   });
 });
@@ -31,8 +30,6 @@ const changePassword = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
-
 
 export const authControllers = {
   loginUser,

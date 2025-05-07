@@ -1,26 +1,28 @@
-import { Schema, model } from "mongoose";
-import { TUser, UserModel } from "./user.interface";
-import { StatusCodes } from "http-status-codes";
-import AppError from "../../error/AppError";
-import bcrypt from "bcrypt";
-import config from "../../config";
+import { Schema, model } from 'mongoose';
+import { TUser, UserModel } from './user.interface';
+import { StatusCodes } from 'http-status-codes';
+import AppError from '../../error/AppError';
+import bcrypt from 'bcrypt';
+import config from '../../config';
 
-
-const userSchema = new Schema<TUser,UserModel>(
+const userSchema = new Schema<TUser, UserModel>(
   {
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, required: true , select: 0},
+    password: { type: String, required: true, select: 0 },
     passwordChangedAt: { type: Date, default: null },
-    status: { type: String, enum: ["active", "deactivated"], default: "active" },
-    role: { type: String, enum: ["admin", "customer"], default: "customer" },
-    isDeleted:{type:Boolean,default:false}
+    status: {
+      type: String,
+      enum: ['active', 'deactivated'],
+      default: 'active',
+    },
+    role: { type: String, enum: ['admin', 'customer'], default: 'customer' },
+    isDeleted: { type: Boolean, default: false },
   },
   {
     timestamps: true,
-  }
+  },
 );
-
 
 userSchema.pre('save', async function (next) {
   const isUserExist = await User.findOne({ email: this.email });
@@ -35,8 +37,6 @@ userSchema.post('save', function (doc, next) {
   doc.password = '';
   next();
 });
-
-
 
 userSchema.statics.isUserExistByEmail = async function (email: string) {
   return await User.findOne({ email }).select('+password');
@@ -59,9 +59,6 @@ userSchema.statics.isJWTIssuedBeforePasswordChanged = async function (
   return passwordChangedTime > jwtIssuedTimestamp;
 };
 
-
-
-
-const User = model<TUser,UserModel>("User", userSchema);
+const User = model<TUser, UserModel>('User', userSchema);
 
 export default User;
